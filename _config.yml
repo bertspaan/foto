@@ -1,3 +1,4 @@
+markdown: kramdown
 baseurl: /photos
 exclude: ['auth', 'README.md']
 

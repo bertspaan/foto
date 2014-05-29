@@ -1,0 +1,18 @@
+collections:
+  gdmbr:
+    output: false
+    label: chips
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: ""
+  - scope:
+      path: "data"
+    values:
+      layout: "data"
+  - scope:
+      path: "albums"
+    values:
+      layout: "album"

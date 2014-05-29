@@ -1,0 +1,177 @@
+---
+layout: default
+title: Albums
+---
+    <ol id="album-years">
+      <li>
+        <!-- Hier albumtekst -->
+        <ol class="album">
+        </ol>
+      </li>
+    </ol>
+    <div id="photo" class="hidden">
+      <ol id="photo-queue">
+        <!-- <li id="photo-current">
+          <img id="photo" />
+        <li> -->
+      </ol>
+    </div>
+
+
+
+    <script>
+      //var utils = new Utils();
+      var data = {};
+      var cur = 0;
+
+      // Amount of photos to buffer, before and after current photo - queueSize = 1 loads 3 photos.
+      var queueSize = 2;
+
+      function go(filename) {
+        var found = false;
+        for (var i = 0; i < data.photos.length; i++) {
+          if (filename == data.photos[i]) {
+            found = true;
+            cur = i;
+            break;
+          }
+        }
+
+        if (found) {
+          var photos = data.photos
+              .slice(Math.max(0, cur  - queueSize), Math.min(data.photos.length, cur + queueSize) + 1)
+              .map(function(d) {
+                return {
+                  filename: d,
+                  current: (d == filename)
+                }
+              });
+
+          var queue = d3.select('#photo-queue').selectAll('li')
+              .data(photos, function(d) { return d.filename; });
+
+          queue.exit().remove();
+
+          var photo = queue.enter()
+              .append('li')
+              .classed('photo-current', function(d) { return d.current; });
+
+          photo.append('img').attr('src', function(d) { return data.baseurl + 'sizes/1200/' + d.filename; });
+
+
+          //d3.select('#photo').attr('src', data.baseurl + 'sizes/1200/' + data.photos[i]);
+
+          //console.log("HUNU BERHERB!");
+
+          d3.select('#album-years').classed('hidden', true);
+          d3.select('#photo').classed('hidden', false);
+
+        } else {
+          // Error! laat album zien!
+        }
+      }
+
+      function setTitle(parts) {
+        // parts is array of paths OR {title: "{title}", paht: "{path}"} objects
+        var breadcrumbs = d3.select('#menu-albums').selectAll('.breadcrumb');
+        breadcrumbs.remove();
+
+        var breadcrumb = breadcrumbs.data(parts).enter()
+          .append('li')
+            .attr('class', 'breadcrumb');
+
+        breadcrumb.html(' &raquo; ');
+        breadcrumb.append('a')
+            .attr('href', function(d, i) {
+              var url = "{{ site.baseurl }}/albums";
+              for (var n = 0; n < i + 1; n++) {
+                url += n == 0 ? '#' : '/';
+                url += (parts[n].path ? parts[n].path : parts[n]);
+              }
+              return url;
+            })
+            .html(function(d) { return d.title ? d.title : d; });
+
+        //{{ page.title }} | bertspaan.nl
+
+
+      }
+
+      window.onhashchange = function() {
+        update();
+      };
+
+      //document.onclick = function() { go(++cur % (data.photos.length)); };
+      function fwd() { go(data.photos[Math.min(data.photos.length - 1, ++cur)]); }
+      function rev() { go(data.photos[Math.max(0, --cur)]); }
+      document.onkeydown = function(e) {
+        if (e.which === 39) fwd();
+        if (e.which === 37) rev();
+        if (e.which === 27) esc();
+      };
+      document.ontouchstart = function(e) {
+        var x0 = e.changedTouches[0].pageX;
+        document.ontouchend = function(e) {
+          var x1 = e.changedTouches[0].pageX;
+          if (x1 - x0 < 0) fwd();
+          if (x1 - x0 > 0) rev();
+        };
+      };
+
+      function update() {
+        var hash = location.hash;
+        if (hash) {
+          var disableHashChange = true;
+
+          hash = hash.substring(1, hash.length);
+
+          // Removing leading '/'
+          if (hash.charAt(0) == '/') {
+            hash = hash.slice(1);
+          }
+          // Removing trailing '/'
+          if (hash.slice(-1) == '/') {
+            hash = hash.slice(0, -1);
+          }
+
+          location.hash = hash;
+
+          var hashParts = hash.split("/");
+          var slashCount = hashParts.length - 1;
+
+          if (slashCount == 0) {
+            // Display single year of albums
+            setTitle(hashParts);
+          } else if (slashCount > 0) {
+            // TODO: kijk of bestaat, anders album list
+            d3.json([hashParts[0], hashParts[1]].join('/') + '.json', function(error, json) {
+              data = json;
+              setTitle([hashParts[0], {title: data.title, path: hashParts[1]}].concat(hashParts.slice(2)));
+
+              if (slashCount == 1) {
+                // Display single album
+                d3.select('.album').selectAll('li')
+                    .data(data.photos)
+                    .enter()
+                  .append('li')
+                  .append('a')
+                    .attr('href', function(d) { return '#' + hash + '/' + d; })
+                  .append('img')
+                    .attr('src', function(d) { return data.baseurl + 'sizes/240/' + d; });
+
+
+              } else if (slashCount == 2) {
+                // Display single photo
+                var filename = hashParts[slashCount];
+                go(filename);
+              }
+            });
+          }
+        } else {
+          // Display album list
+        }
+      }
+
+      update();
+
+    </script>

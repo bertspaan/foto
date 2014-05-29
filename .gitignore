@@ -1,0 +1,3 @@
+albums/*/*.json
+auth/keys.json
+_site

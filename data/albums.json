@@ -1,0 +1,15 @@
+---
+---
+[{% for page in site.pages %}{% if page.photos %}
+  {
+    "title": "{{ page.title }}",
+    "date": "{{ page.date }}",
+    "baseurl": "{{ page.baseurl }}",
+    "index": "{{ page.index }}",
+    "count": {{ page.photos | size }},
+    "secret": {{ page.secret }},
+    "url": "{{ page.url | replace_first:'/albums/','albums#' | replace_first:'.json' }}",
+    "year": {{ page.path | replace_first:'albums/','' | split:"/"| first }}
+  }
+  {% if forloop.last != true %},{% endif %}{% endif %}{% endfor %}
+]

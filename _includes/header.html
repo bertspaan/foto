@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>{{ page.title }} | bertspaan.nl</title>
+    <meta charset="utf-8">
+    <meta name="viewport"content="width=device-width,initial-scale=1">
+    <link href="{{ site.baseurl }}/img/favicon.ico" rel="shortcut icon" type=image/x-icon>
+    <script src="{{ site.baseurl }}/js/d3.min.js" charset="utf-8"></script>
+    <script src="{{ site.baseurl }}/js/photoblog.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="{{ site.baseurl }}/css/style.css">
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul>
+          <li><h1><a href="{{ site.baseurl }}/">Berts foto's</a></h1> |</li>
+          <li><a href="{{ site.baseurl }}/blog">fotoblog</a> |</li>
+          <li>
+            <ol id="menu-albums">
+              <li><a href="{{ site.baseurl }}/albums">albums</a></li>
+            </ol>
+          </li>
+          <li id="auth">
+            <a href="{{ site.baseurl }}/#auth">Log in</a>
+          </li>
+        </ul>
+      </nav>
+  	</header>
+    <main>

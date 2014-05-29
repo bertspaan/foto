@@ -1,0 +1,52 @@
+---
+layout: default
+title: Foto's
+---
+
+<p>Hier laatste blogfoto, daarna 10 blogfoto's</p>
+
+    <ol id="album-years">
+    </ol>
+
+    <script>
+      // TODO: only if authorized!
+      d3.json('{{ site.baseurl }}/data/albums.json', function(error, json) {
+
+        // Nest albums by year
+        var albums = d3.nest()
+            .key(function(d) { return d.year; })
+            .sortKeys(d3.decending)
+            .sortValues(function(a, b) {
+              return (new Date(a.date)) > (new Date(b.date));
+            })
+            .entries(json);
+
+        // Display album list, by year
+        var year = d3.select('#album-years').selectAll('li')
+            .data(albums)
+            .enter()
+          .append('li');
+
+        year.append('h3').html(function(d) { return d.key; });
+
+        // TODO: sort by date
+        var album = year.append('ol')
+            .attr('class' , 'album')
+          .selectAll('li')
+            .data(function(d) { return d.values; })
+            .enter()
+          .append('li')
+          .append('a')
+            .attr('href', function(d) { return d.url; });
+
+        album.append('img').attr('src', function(d) { return d.baseurl + 'sizes/120/' + d.index; });
+        album.append('h4').html(function(d) { return d.title; });
+        album.append('span').attr('class', 'album-date').html(function(d) { return d.date; });
+        album.append('span').attr('class', 'album-count').html(function(d) { return d.count == 1 ? ("1 foto") : (d.count + " foto's"); });
+
+        //   .append('a')
+        //     .attr('href', function(d) { return '#' + hash + '/' + d; })
+        //   .append('img')
+        //     .attr('src', function(d) { return data.baseurl + 'sizes/240/' + d; });
+      });
+    </script>

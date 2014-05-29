@@ -1,0 +1,7 @@
+{
+  "title": "{{ page.title }}",
+  "date": "{{ page.date }}",
+  "description": {{ content | markdownify | strip_newlines | jsonify}},
+  "baseurl": "{{ page.baseurl }}",
+  "photos": {{ page.photos | jsonify}}
+}

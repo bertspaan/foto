@@ -1,3 +1,7 @@
+baseurl: /photos
+exclude: ['auth', 'README.md']
+
+
 collections:
   gdmbr:
     output: false

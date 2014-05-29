@@ -10,7 +10,7 @@ title: Foto's
 
     <script>
       // TODO: only if authorized!
-      d3.json('{{ site.baseurl }}/data/albums.json', function(error, json) {
+      d3.json('{{ site.baseurl }}data/albums.json', function(error, json) {
 
         // Nest albums by year
         var albums = d3.nest()

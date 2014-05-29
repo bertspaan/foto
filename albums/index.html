@@ -83,7 +83,7 @@ title: Albums
         breadcrumb.html(' &raquo; ');
         breadcrumb.append('a')
             .attr('href', function(d, i) {
-              var url = "{{ site.baseurl }}/albums";
+              var url = "{{ site.baseurl }}albums";
               for (var n = 0; n < i + 1; n++) {
                 url += n == 0 ? '#' : '/';
                 url += (parts[n].path ? parts[n].path : parts[n]);

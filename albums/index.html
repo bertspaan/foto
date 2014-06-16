@@ -2,12 +2,7 @@
 layout: default
 title: Albums
 ---
-    <ol id="album-years">
-      <li>
-        <!-- Hier albumtekst -->
-        <ol class="album">
-        </ol>
-      </li>
+    <ol id="album-years" class="wrapper">
     </ol>
     <div id="photo" class="hidden">
       <ol id="photo-queue">
@@ -17,15 +12,17 @@ title: Albums
       </ol>
     </div>
 
-
-
     <script>
-      //var utils = new Utils();
       var data = {};
       var cur = 0;
+      var disableHashChange = false;
 
       // Amount of photos to buffer, before and after current photo - queueSize = 1 loads 3 photos.
       var queueSize = 2;
+
+      function esc() {
+
+      }
 
       function go(filename) {
         var found = false;
@@ -52,27 +49,35 @@ title: Albums
 
           queue.exit().remove();
 
-          var photo = queue.enter()
-              .append('li')
-              .classed('photo-current', function(d) { return d.current; });
+          var photo = queue.enter().append('li');
+
+          d3.select('#photo-queue').selectAll('li').classed('photo-current', function(d) { return d.current; });
 
           photo.append('img').attr('src', function(d) { return data.baseurl + 'sizes/1200/' + d.filename; });
 
-
-          //d3.select('#photo').attr('src', data.baseurl + 'sizes/1200/' + data.photos[i]);
-
-          //console.log("HUNU BERHERB!");
+          // TODO: laad kleinste thumbnail onzichtbaar, en gebruik die voor EXIF
+          // EXIF.getData(d3.select('#photo-queue .photo-current img')[0][0], function() {
+          //     alert(EXIF.pretty(this));
+          // });
 
           d3.select('#album-years').classed('hidden', true);
           d3.select('#photo').classed('hidden', false);
-
+          disableHashChange = true;
+          setTitle([
+            data.year,
+            {
+              title: data.title,
+              path: data.name
+            },
+            data.photos[cur]
+          ]);
         } else {
           // Error! laat album zien!
         }
       }
 
       function setTitle(parts) {
-        // parts is array of paths OR {title: "{title}", paht: "{path}"} objects
+        // parts is array of paths OR {title: "{title}", path: "{path}"} objects
         var breadcrumbs = d3.select('#menu-albums').selectAll('.breadcrumb');
         breadcrumbs.remove();
 
@@ -80,10 +85,10 @@ title: Albums
           .append('li')
             .attr('class', 'breadcrumb');
 
-        breadcrumb.html(' &raquo; ');
+        breadcrumb.append('span').attr('class', 'raquo').html(' &raquo; ');
         breadcrumb.append('a')
             .attr('href', function(d, i) {
-              var url = "{{ site.baseurl }}albums";
+              var url = "{{ site.baseurl }}/albums";
               for (var n = 0; n < i + 1; n++) {
                 url += n == 0 ? '#' : '/';
                 url += (parts[n].path ? parts[n].path : parts[n]);
@@ -92,22 +97,28 @@ title: Albums
             })
             .html(function(d) { return d.title ? d.title : d; });
 
-        //{{ page.title }} | bertspaan.nl
+        var title = '';
+        for (var i = 0; i < parts.length; i++) {
+          title += ' » ' + (parts[i].title ? parts[i].title : parts[i]);
+        }
 
+        location.hash = [parts[0], parts[1].path, parts[2]].join('/')
 
+        document.title = '{{ page.title }} | bertspaan.nl' + title;
       }
 
       window.onhashchange = function() {
         update();
       };
 
-      //document.onclick = function() { go(++cur % (data.photos.length)); };
       function fwd() { go(data.photos[Math.min(data.photos.length - 1, ++cur)]); }
       function rev() { go(data.photos[Math.max(0, --cur)]); }
       document.onkeydown = function(e) {
-        if (e.which === 39) fwd();
-        if (e.which === 37) rev();
+        if (e.which === 39 || e.which === 34) fwd();
+        if (e.which === 37 || e.which === 33) rev();
         if (e.which === 27) esc();
+        if (e.which === 76) lightsOut();
+        if (e.which === 70) fullScreen();
       };
       document.ontouchstart = function(e) {
         var x0 = e.changedTouches[0].pageX;
@@ -119,10 +130,14 @@ title: Albums
       };
 
       function update() {
+        if (disableHashChange) {
+          disableHashChange = false;
+          return;
+        }
+
+
         var hash = location.hash;
         if (hash) {
-          var disableHashChange = true;
-
           hash = hash.substring(1, hash.length);
 
           // Removing leading '/'
@@ -133,7 +148,7 @@ title: Albums
           if (hash.slice(-1) == '/') {
             hash = hash.slice(0, -1);
           }
-
+          disableHashChange = true;
           location.hash = hash;
 
           var hashParts = hash.split("/");
@@ -168,7 +183,7 @@ title: Albums
             });
           }
         } else {
-          // Display album list
+          createAlbumList();
         }
       }
 

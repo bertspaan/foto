@@ -2,12 +2,6 @@ markdown: kramdown
 baseurl: /photos
 exclude: ['auth', 'README.md']
 
-
-collections:
-  gdmbr:
-    output: false
-    label: chips
-
 defaults:
   - scope:
       path: ""

@@ -1,4 +1,0 @@
----
----
-
-Eerste blogpost met foto!

@@ -2,51 +2,60 @@
 layout: default
 title: Foto's
 ---
-
-<p>Hier laatste blogfoto, daarna 10 blogfoto's</p>
-
-    <ol id="album-years">
+    <div id="blog" class="wrapper">
+    </div>
+    <div id="blogpost" class="hidden">
+      <ol id="post-queue">
+      </ol>
+    </div>
+    <ol id="album-years" class="wrapper">
     </ol>
+    <ol id="album" class="wrapper album">
+    </ol>
+    <div id="photo" class="hidden">
+      <ol id="photo-queue">
+        <!-- <li id="photo-current">
+          <img id="photo" />
+        <li> -->
+      </ol>
+    </div>
 
     <script>
-      // TODO: only if authorized!
-      d3.json('{{ site.baseurl }}data/albums.json', function(error, json) {
+      baseurlDev = 'http://localhost:8080';
+      //size = '380x253';
 
-        // Nest albums by year
-        var albums = d3.nest()
-            .key(function(d) { return d.year; })
-            .sortKeys(d3.decending)
-            .sortValues(function(a, b) {
-              return (new Date(a.date)) > (new Date(b.date));
-            })
-            .entries(json);
-
-        // Display album list, by year
-        var year = d3.select('#album-years').selectAll('li')
-            .data(albums)
-            .enter()
-          .append('li');
-
-        year.append('h3').html(function(d) { return d.key; });
-
-        // TODO: sort by date
-        var album = year.append('ol')
-            .attr('class' , 'album')
-          .selectAll('li')
-            .data(function(d) { return d.values; })
-            .enter()
-          .append('li')
-          .append('a')
-            .attr('href', function(d) { return d.url; });
-
-        album.append('img').attr('src', function(d) { return d.baseurl + 'sizes/120/' + d.index; });
-        album.append('h4').html(function(d) { return d.title; });
-        album.append('span').attr('class', 'album-date').html(function(d) { return d.date; });
-        album.append('span').attr('class', 'album-count').html(function(d) { return d.count == 1 ? ("1 foto") : (d.count + " foto's"); });
-
-        //   .append('a')
-        //     .attr('href', function(d) { return '#' + hash + '/' + d; })
-        //   .append('img')
-        //     .attr('src', function(d) { return data.baseurl + 'sizes/240/' + d; });
+      crossroads.addRoute('', function() {
+        createHome();
       });
+
+      crossroads.addRoute('blog', function() {
+        createBlog();
+      });
+
+      crossroads.addRoute('blog/{post}', function(entry) {
+        createBlogEntry(post);
+      });
+
+      crossroads.addRoute('albums', function() {
+        createAlbums();
+      });
+
+      crossroads.addRoute('albums/{year}', function(year) {
+        createAlbums(year);
+      });
+
+      crossroads.addRoute('albums/{year}/{album}', function(year, album) {
+        createAlbum(year, album);
+      });
+
+      crossroads.addRoute('albums/{year}/{album}/{filename}', function(year, album, filename) {
+        createAlbum(year, album, filename);
+      });
+
+      function parseHash(newHash, oldHash) {
+        crossroads.parse(newHash);
+      }
+      hasher.initialized.add(parseHash);
+      hasher.changed.add(parseHash);
+      hasher.init();
     </script>

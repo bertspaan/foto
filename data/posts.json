@@ -1,11 +1,12 @@
 ---
 ---
-[{% for post in site.posts %}
+[{% for post in site.pages %}{% if post.layout == 'post' %}
   {
     "title": "{{ post.title }}",
     "photo": "{{ post.photo }}",
     "date": "{{ post.date }}",
+    "year": {{ post.path | replace_first:'posts/','' | split:"/"| first }},
     "url": "{{ post.url }}"
-  }
-  {% if forloop.last != true %},{% endif %}{% endfor %}
+  },
+  {% endif %}{% endfor %} null
 ]

@@ -280,5 +280,5 @@ header ol li, header ul li {
   position: absolute;
   padding: 10px;
   margin: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.75);
 }

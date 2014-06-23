@@ -1,5 +1,5 @@
 markdown: kramdown
-baseurl: /photos
+photo_baseurl: http://s3.bertspaan.nl/
 exclude: ['auth', 'README.md']
 
 defaults:

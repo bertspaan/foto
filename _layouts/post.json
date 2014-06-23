@@ -1,10 +1,8 @@
 {
   "title": "{{ page.title }}",
   "name": "{{ page.url | split:"/"| last | replace_first:'.json' }}",
+  "photo": "{{ page.photo }}",
   "date": "{{ page.date }}",
-  "baseurl": "{{ page.baseurl }}",
-  "description": {{ content | markdownify | strip_newlines | jsonify}},
   "url": "{{ page.url | replace_first:'/albums/','#albums/' | replace_first:'.json' }}",
-  "year": {{ page.path | replace_first:'albums/','' | split:"/"| first }},
-  "photos": {{ page.photos | jsonify}}
+  "content": {{ content | markdownify | strip_newlines | jsonify}}
 }

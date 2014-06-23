@@ -5,7 +5,8 @@ var baseurlDev = null;
 var size = '380x253';
 
 var data = {
-  blog: null,
+  blogposts: null,
+  current_blogpost: -1,
   blogpost: null,
   albums: null,
   album: null,
@@ -51,7 +52,10 @@ function fwd() {
   if (data.album && data.album.current >= 0) {
     data.album.current = Math.min(data.album.photos.length - 1, ++data.album.current);
     location.hash = data.album.url.slice(1) + '/' + data.album.photos[data.album.current];
-    showPhoto();
+    //showAlbumPhoto();
+  } else if (data.blogposts && data.current_blogpost >= 0) {
+    data.current_blogpost = Math.min(data.blogposts.length - 1, ++data.current_blogpost);
+    location.hash = 'blog/' + data.blogposts[data.current_blogpost].name;
   }
 }
 
@@ -59,15 +63,22 @@ function rev() {
   if (data.album && data.album.current >= 0) {
     data.album.current = Math.max(0, --data.album.current);
     location.hash = data.album.url.slice(1) + '/' + data.album.photos[data.album.current];
-    showPhoto();
+    //showAlbumPhoto();
+  } else if (data.blogposts && data.current_blogpost >= 0) {
+    data.current_blogpost = Math.max(0, --data.current_blogpost);
+    location.hash = 'blog/' + data.blogposts[data.current_blogpost].name;
   }
 }
 
 function esc() {
-  if (data.album) {
+  if (data.album && data.album.current >= 0) {
     data.album.current = -1;
     location.hash = data.album.url.slice(1);
     createAlbum(data.album.year, data.album.name);
+  } else if (data.current_blogpost >= 0) {
+    data.current_blogpost = -1;
+    location.hash = 'blog';
+    showBlogPosts();
   }
 }
 
@@ -88,20 +99,23 @@ document.ontouchstart = function(e) {
   };
 };
 
-function createHome() {
-  createBlog();
-  createAlbums();
+function showHome() {
+  showBlogPosts();
+  //showAlbums();
 }
 
-function createBlog(year) {
+function showBlogPosts(year) {
+  data.current_blogpost = -1;
+  d3.select('#blogposts').classed('hidden', false);
+  hideBlogPost();
   var t = {year: year};
-  if (data.posts) {
+  if (data.blogposts) {
     clearAlbums();
     clearAlbum();
-    clearPhoto();
+    clearAlbumPhoto();
 
     // Filter posts by year
-    var posts = data.posts.filter(function(d) {
+    var posts = data.blogposts.filter(function(d) {
       if (t.year) {
         return d.key == t.year;
       } else {
@@ -109,9 +123,17 @@ function createBlog(year) {
       }
     });
 
+    var blogpostsByYear = d3.nest()
+        .key(function(d) { return d.year; })
+        .sortKeys(d3.decending)
+        .sortValues(function(a, b) {
+          return (new Date(a.date)) < (new Date(b.date));
+        })
+        .entries(data.blogposts);
+
     // Display blog posts, by year
-    var blogYears = d3.select('#blog').selectAll('.blog-year')
-        .data(posts, function(d) { return d.key; });
+    var blogYears = d3.select('#blogposts').selectAll('.blog-year')
+        .data(blogpostsByYear, function(d) { return d.key; });
 
     blogYears.exit().remove();
 
@@ -119,53 +141,41 @@ function createBlog(year) {
       .append('li')
       .attr('class', 'blog-year');
 
-    blogYear.append('h3').append('a')
-        .attr('href', function(d) { return '{{ site.baseurl }}/#blog/' + d.key; })
-        .html(function(d) { return d.key; });
+    // blogYear.append('h3').append('a')
+    //     .attr('href', function(d) { return '{{ site.baseurl }}/#blog/' + d.key; })
+    //     .html(function(d) { return d.key; });
 
     var blog = blogYear.append('ol')
-        .classed('blog', true)
+        .classed('album', true)
       .selectAll('li')
         .data(function(d) { return d.values; })
         .enter()
       .append('li')
       .append('a')
-        .attr('href', function(d) { return '{{ site.baseurl }}/' + d.url; });
-    //
-    // album.append('img').attr('src', function(d) { return d.baseurl + 'sizes/240/' + d.index; });
-    // album.append('h4').html(function(d) { return d.title; });
-    // album.append('span').attr('class', 'album-count').html(function(d) { return d.count == 1 ? ("1 foto") : (d.count + " foto's"); });
-    // album.append('div').attr('class', 'album-date').html(function(d) {
-    //   var date = moment(d.date).format('MMMM YYYY');
-    //   return date.substring(0, 1).toUpperCase() + date.substring(1);
-    // });
+        .attr('href', function(d) { return '{{ site.baseurl }}/#blog/' + d.name; })
+
+    blog.append('img').attr('src', function(d) { return '{{ site.photo_baseurl }}blog/sizes/' + size + '/' + d.photo; });
+    blog.append('h4').html(function(d) { return d.title; });
+
+    blog.append('div').attr('class', 'album-date').html(function(d) {
+      var date = moment(d.date).format('DD MMMM YYYY');
+      return date.substring(0, 1).toUpperCase() + date.substring(1);
+    });
 
   } else {
-    d3.json('{{ site.baseurl }}/data/posts.json', function(error, json) {
-      var posts = json.filter(function(d) { return d; });
-      data.posts = d3.nest()
-          .key(function(d) { return d.year; })
-          .sortKeys(d3.decending)
-          .sortValues(function(a, b) {
-            return (new Date(a.date)) < (new Date(b.date));
-          })
-          .entries(posts);
-
-      createBlog(t.year)
+    getBlogPosts(function() {
+      showBlogPosts(t.year);
     });
   }
 }
 
-function createBlogPost(post) {
-
-}
-
-function createAlbums(year) {
+function showAlbums(year) {
+  d3.select('#album-years').classed('hidden', false);
   data.album = null;
   var t = {year: year};
   if (data.albums) {
     clearAlbum();
-    clearPhoto();
+    clearAlbumPhoto();
     setTitle();
 
     // Filter albums by year
@@ -210,26 +220,21 @@ function createAlbums(year) {
       return date.substring(0, 1).toUpperCase() + date.substring(1);
     });
   } else {
-    d3.json('{{ site.baseurl }}/data/albums.json', function(error, json) {
-      var albums = json.filter(function(d) { return d; });
-      data.albums = d3.nest()
-          .key(function(d) { return parseInt(d.year); })
-          .sortValues(function(a, b) {
-            return (new Date(a.date)) < (new Date(b.date));
-          })
-          .entries(albums);
-      createAlbums(t.year)
+    getAlbums(function() {
+      createAlbums(t.year);
     });
+
   }
 }
 
 function createAlbum(year, album, filename) {
+  showAlbum();
   if (data.album) {
     if (!filename) {
       // Display single album
 
       clearAlbum();
-      clearPhoto();
+      clearAlbumPhoto();
       d3.select('#album').selectAll('li')
           .data(data.album.photos)
           .enter()
@@ -254,7 +259,7 @@ function createAlbum(year, album, filename) {
         }
       }
       if (found) {
-        showPhoto();
+        showAlbumPhoto();
       } else {
         // Filename not found in album, show complete album
         createAlbum(year, album);
@@ -265,7 +270,7 @@ function createAlbum(year, album, filename) {
       data.album = json;
       data.album.current = -1;
 
-      clearBlog();
+      clearBlogPosts();
       clearBlogPost();
       clearAlbums();
 
@@ -279,15 +284,19 @@ function clearAlbums() {
   d3.select('#album-years').selectAll('li').remove();
 }
 
-function clearBlog() {
-  d3.select('#blog').selectAll('li').remove();
+function clearBlogPosts() {
+  d3.select('#blogposts').selectAll('li').remove();
 }
 
 function clearBlogPost() {
 }
 
-function hideBlog() {
-  d3.select('#blog').classed('hidden', true);
+function hideBlogPosts() {
+  d3.select('#blogposts').classed('hidden', true);
+}
+
+function hideBlogPost() {
+  d3.select('#blogpost').classed('hidden', true);
 }
 
 function hideAlbum() {
@@ -302,22 +311,73 @@ function clearAlbum() {
   d3.select('#album').selectAll('li').remove();
 }
 
+
 function hideAlbums() {
   d3.select('#album-years').classed('hidden', true);
 }
 
-function hidePhoto() {
+function hideAlbumPhoto() {
   d3.select('#photo').classed('hidden', true);
 }
 
-function clearPhoto() {
-  hidePhoto();
+function clearAlbumPhoto() {
+  hideAlbumPhoto();
   d3.select('#photo-queue').selectAll('li').remove();
 }
 
-function showPhoto() {
+function showBlogPost(post) {
+  getBlogPosts(function() {
+    // Display single blogpost
+    hideBlogPosts();
+    d3.select('#blogpost').classed('hidden', false);
+
+    getBlogPost(post, function() {
+      var filename = data.blogposts[data.current_blogpost].photo;
+      var filenames = data.blogposts
+          .slice(Math.max(0, data.current_blogpost - queueSize), Math.min(data.blogposts.length, data.current_blogpost + queueSize) + 1)
+          .map(function(d) {
+            return {
+              filename: d.photo,
+              current: (d.name == data.blogposts[data.current_blogpost].name)
+            }
+          });
+
+      var queue = d3.select('#blogpost-queue').selectAll('li')
+           .data(filenames, function(d) { return d.filename; });
+
+      queue.exit().remove();
+
+      var photo = queue.enter().append('li');
+
+      d3.select('#blogpost-queue').selectAll('li').classed('photo-current', function(d) { return d.current; });
+
+      photo.append('img').attr('src', function(d) {
+        return '{{ site.photo_baseurl }}blog/sizes/1920x1200/' + d.filename;
+      });
+
+      d3.select('#blogpost-content').html(data.blogpost.content);
+
+
+      //
+      // // TODO: laad kleinste thumbnail onzichtbaar, en gebruik die voor EXIF
+      // // EXIF.getData(d3.select('#photo-queue .photo-current img')[0][0], function() {
+      // //     alert(EXIF.pretty(this));
+      // // });
+      //
+      // //hasher.setHash(data.album.url + '/' + filename);
+      //
+      // d3.select('#photo').classed('hidden', false);
+      //
+      // setTitle();
+    })
+
+  });
+
+}
+
+function showAlbumPhoto() {
   var filename = data.album.photos[data.album.current];
-  var photos = data.album.photos
+  var filenames = data.album.photos
       .slice(Math.max(0, data.album.current - queueSize), Math.min(data.album.photos.length, data.album.current + queueSize) + 1)
       .map(function(d) {
         return {
@@ -327,7 +387,7 @@ function showPhoto() {
       });
 
   var queue = d3.select('#photo-queue').selectAll('li')
-      .data(photos, function(d) { return d.filename; });
+      .data(filenames, function(d) { return d.filename; });
 
   queue.exit().remove();
 
@@ -487,3 +547,51 @@ function setTitle() {
 //     // Error! laat album zien!
 //   }
 // }
+
+function getAlbums(callback) {
+  if (!data.albums) {
+    d3.json('{{ site.baseurl }}/data/albums.json', function(error, json) {
+      var albums = json.filter(function(d) { return d; });
+      data.albums = d3.nest()
+          .key(function(d) { return parseInt(d.year); })
+          .sortValues(function(a, b) {
+            return (new Date(a.date)) < (new Date(b.date));
+          })
+          .entries(albums);
+      callback()
+    });
+  } else {
+    callback();
+  }
+}
+
+function getBlogPosts(callback) {
+  if(!data.blogposts) {
+    d3.json('{{ site.baseurl }}/data/posts.json', function(error, json) {
+      var posts = json.filter(function(d) { return d; });
+      data.blogposts = posts;
+      data.current_blogpost = -1;
+      callback();
+    });
+  } else {
+    callback();
+  }
+}
+
+function getBlogPost(post, callback) {
+  var year = post.split('-')[0];
+  d3.json('{{ site.baseurl }}/posts/' + year + '/' + post +'.json', function(error, json) {
+    data.blogpost = json;
+
+    var found = false;
+    for (var i = 0; i < data.blogposts.length; i++) {
+      if (post == data.blogposts[i].name) {
+        found = true;
+        data.current_blogpost = i;
+        break;
+      }
+    }
+
+    callback();
+  });
+}

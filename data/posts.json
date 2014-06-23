@@ -5,7 +5,8 @@
     "title": "{{ post.title }}",
     "photo": "{{ post.photo }}",
     "date": "{{ post.date }}",
-    "year": {{ post.path | replace_first:'posts/','' | split:"/"| first }},
+    "name": "{{ post.path | split:"/"| last | replace_first:'.json','' }}",
+    "year": {{ post.path | replace_first:'posts/','' | split:"/" | first }},
     "url": "{{ post.url }}"
   },
   {% endif %}{% endfor %} null

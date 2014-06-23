@@ -9,11 +9,29 @@ html {
   background-color: black;
 }
 
+p {
+  margin: 0;
+}
+
 @font-face {
   font-family: 'Edmondsans';
   font-style: normal;
   font-weight: normal;
   src: url('{{ site.baseurl}}/fonts/Edmondsans-Regular.otf')
+}
+
+@font-face {
+  font-family: 'Edmondsans';
+  font-style: normal;
+  font-weight: 500;
+  src: url('{{ site.baseurl}}/fonts/Edmondsans-Medium.otf')
+}
+
+@font-face {
+  font-family: 'Edmondsans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('{{ site.baseurl}}/fonts/Edmondsans-Bold.otf')
 }
 
 body {
@@ -132,9 +150,10 @@ header ol li, header ul li {
 }
 
 /* =============================================
-   Albums
+   Blogs, albums
    ============================================= */
 
+#blogposts,
 #album-years {
   list-style-type: none;
 }
@@ -143,12 +162,14 @@ header ol li, header ul li {
   display: inline;
   }*/
 
+#blogposts h3,
 #album-years h3 {
-  font-size: 70px;
-  margin: 20px 0;
+  font-size: 90px;
+  margin: 40px 0;
   text-align: center;
 }
 
+#blogposts h3 a,
 #album-years h3 a {
   text-decoration: none;
 }
@@ -208,6 +229,7 @@ header ol li, header ul li {
    Single photo
    ============================================= */
 
+#blogpost,
 #photo {
   top: 55px;
   bottom: 0;
@@ -216,23 +238,28 @@ header ol li, header ul li {
   overflow: hidden;
 }
 
+.fullscreen #blogpost,
 .fullscreen #photo {
   top: 35px;
 }
 
+#blogpost-queue,
 #photo-queue {
   margin: 0;
   padding: 0;
   list-style-type: none;
 }
 
+#blogpost-queue li,
 #photo-queue li {
   position: absolute;
   top: 10px;
-  width: 100%;
+  width: calc(100% - 20px);
   bottom: 10px;
+  left: 10px;
 }
 
+#blogpost-queue img,
 #photo-queue img {
   max-width: 100%;
   max-height: 100%;
@@ -242,6 +269,16 @@ header ol li, header ul li {
   margin-right: auto;
 }
 
+#blogpost-queue .photo-current img,
 #photo-queue .photo-current img {
   opacity: 1;
+}
+
+#blogpost-content {
+  bottom: 20px;
+  left: 20px;
+  position: absolute;
+  padding: 10px;
+  margin: 0;
+  background-color: rgba(0, 0, 0, 0.5);
 }

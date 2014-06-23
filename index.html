@@ -2,11 +2,12 @@
 layout: default
 title: Foto's
 ---
-    <div id="blog" class="wrapper">
+    <div id="blogposts" class="wrapper">
     </div>
     <div id="blogpost" class="hidden">
-      <ol id="post-queue">
+      <ol id="blogpost-queue">
       </ol>
+      <div id="blogpost-content"></div>
     </div>
     <ol id="album-years" class="wrapper">
     </ol>
@@ -25,36 +26,51 @@ title: Foto's
       //size = '380x253';
 
       crossroads.addRoute('', function() {
-        createHome();
+        showHome();
       });
 
       crossroads.addRoute('blog', function() {
-        createBlog();
+        showBlogPosts();
+        hideAlbums();
+        hideAlbum();
+        hideAlbumPhoto();
       });
 
-      crossroads.addRoute('blog/{post}', function(entry) {
-        createBlogEntry(post);
+      crossroads.addRoute('blog/{post}', function(post) {
+        hideAlbums();
+        hideAlbum();
+        hideAlbumPhoto();
+        showBlogPost(post);
       });
 
       crossroads.addRoute('albums', function() {
+        hideBlog();
+        hideBlogPost();
         createAlbums();
       });
 
       crossroads.addRoute('albums/{year}', function(year) {
+        hideBlog();
+        hideBlogPost();
         createAlbums(year);
       });
 
       crossroads.addRoute('albums/{year}/{album}', function(year, album) {
+        hideBlog();
+        hideBlogPost();
         createAlbum(year, album);
       });
 
       crossroads.addRoute('albums/{year}/{album}/{filename}', function(year, album, filename) {
+        hideBlog();
+        hideBlogPost();
         createAlbum(year, album, filename);
       });
 
       function parseHash(newHash, oldHash) {
         crossroads.parse(newHash);
       }
+
       hasher.initialized.add(parseHash);
       hasher.changed.add(parseHash);
       hasher.init();
